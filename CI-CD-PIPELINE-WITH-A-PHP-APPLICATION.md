@@ -1,14 +1,16 @@
-# Project 14
-
 ## Experience Continuous Integration With Jenkins | Ansible | Artifactory | Sonarqube | PHP
+
+
+### DNS Requirement
+![image](https://user-images.githubusercontent.com/58276505/172927015-f6b53669-2f23-4119-a36d-1342cfefbe7a.png)
+
+### Project Architecture
+
+![image](https://user-images.githubusercontent.com/58276505/172928038-df961e29-154a-4462-a4db-0c051c6125f0.png)
 
 ### Step 1: Simulating a typical CI/CD Pipeline for a PHP Based application
 
-Set Up
-
----
-
-Ansible inventory should look like this:
+Set Up: Ansible inventory should look like this:
 
 ```
 touch inventory/{pentest,pre-prod,sit,ci}.yml
@@ -21,12 +23,7 @@ touch inventory/{pentest,pre-prod,sit,ci}.yml
 ├── sit
 └── uat
 
-
-
 ```
-
-
-
 
 ci inventory
 
@@ -64,7 +61,6 @@ ansible_python_interpreter=/usr/bin/python
 <DB-Server-Private-IP-Address>
 ```
 
-
 pentest
 
 ```
@@ -83,9 +79,6 @@ Add two more roles to your Ansible playbook
 Sonarqube: Sonarqube is an open-source platform developed by SonarSource for continuous inspection of code quality to perform automatic reviews with static analysis of code to detect bugs, code smells, and security vulnerabilities (source: https://en.wikipedia.org/wiki/SonarQube)
 
 Artifactory: JFrog Artifactory is a universal DevOps solution providing end-to-end automation and management of binaries and artifacts through the application delivery process that improves productivity across your development ecosystem. (source: https://www.jfrog.com/confluence/display/JFROG/JFrog+Artifactory)
-
-
-
 
 Configure Ansible for Jenkins development
 
@@ -163,7 +156,6 @@ In previous projects, you have been launching Ansible commands manually from a C
   - Refresh the page and you should see the new branch.
 ![Project14cleanupchangesonJenkins](https://user-images.githubusercontent.com/41236641/163572159-74913a9c-2b38-4126-9d25-a11311894bab.PNG)
 
-
   - Open Blue Ocean and you should see the new branch building (or has finished building)
 ![Project14blueotest merge](https://user-images.githubusercontent.com/41236641/163572352-7ffa770b-c82c-47ed-803b-fecb5a7e8bfd.PNG)
 
@@ -180,14 +172,12 @@ In previous projects, you have been launching Ansible commands manually from a C
     6. Eventually, your main branch should have a successful pipeline like this in blue ocean
     ```
     Your final pipeline should look like this:
-    ![Project14cleanupc](https://user-images.githubusercontent.com/41236641/163572300-09cbc54a-3c9d-4f53-a845-052ef8519de0.PNG)
 
+![Project14cleanupc](https://user-images.githubusercontent.com/41236641/163572300-09cbc54a-3c9d-4f53-a845-052ef8519de0.PNG)
 
 Running Ansible Playbook from Jenkins
-
----
-
 - Install Ansible on your Jenkins server
+
   ```
   sudo apt install ansible -y
   ```
@@ -196,15 +186,17 @@ Running Ansible Playbook from Jenkins
   - Click Manage Plugins
   - Click Available tab and in the search bar, enter Ansible and click the check box next to the plugin
   - Scroll down and click 'Install without restart'
+ 
 ![Project14ansibleplugin](https://user-images.githubusercontent.com/41236641/163572804-512dfa3b-0594-4f09-b58b-db80f32183f8.PNG)
 
-  - Navigate to Global Tools Configuration and ensure the path to ansible executables is set.
-    ![Project14-gt](https://user-images.githubusercontent.com/41236641/163574367-048fc84b-8c12-4283-a632-38b1de63f759.PNG)
+- Navigate to Global Tools Configuration and ensure the path to ansible executables is set.
+
+![Project14-gt](https://user-images.githubusercontent.com/41236641/163574367-048fc84b-8c12-4283-a632-38b1de63f759.PNG)
 
 - Create Jenkinsfile from scratch (delete all the current stages in the file)
-  - Create the ansible.cfg file and add the following to it:
+- Create the ansible.cfg file and add the following to it:
   
-    ```
+```
     vi deploy/ansible.cfg
     [defaults]
     debug = False
@@ -220,7 +212,7 @@ Running Ansible Playbook from Jenkins
     - ``` roles_path ``` to set the roles_path
 
   - Pass its path as an environment variable to JENKINS. The name ANSIBLE_CONFIG is recognized by ansible for declaring the path to the required ansible.cfg
-    ```
+```
     environment {
         ANSIBLE_CONFIG = "${WORKSPACE}/deploy/ansible.cfg"
       }
@@ -371,27 +363,22 @@ To deploy to other environments, we have to use parameters
 
 
 - Running the Job should trigger the parameters:
-  ![Project14inputrequireddev](https://user-images.githubusercontent.com/41236641/163574955-b542694a-2e71-467d-aa38-f2b56934f402.PNG)
-  ![Project14inventory_ci](https://user-images.githubusercontent.com/41236641/163575066-8fc44b58-e3d5-4b4d-891f-4d669d2e0597.PNG)
 
+![Project14inputrequireddev](https://user-images.githubusercontent.com/41236641/163574955-b542694a-2e71-467d-aa38-f2b56934f402.PNG)
+
+![Project14inventory_ci](https://user-images.githubusercontent.com/41236641/163575066-8fc44b58-e3d5-4b4d-891f-4d669d2e0597.PNG)
 
 ### Step 2: CI/CD Pipeline for a TODO Application
 
-
-
-Configure Artifactory
-
----
-
+### Configure Artifactory
 - Create an Ansible role to install Artifactory and update the ansible playbook with the new role.
+* ansible-galaxy collection install jfrog.platform
 
-  ```
-  ansible-galaxy collection install jfrog.platform
-  cd /home/ubuntu/.ansible/collections/ansible_collections/jfrog/platform
-  cp -r artifactory ~/<project_directory>/roles/artifactory
-  
-  static-assignments/artifactory.yml
-    ---
+```
+cd /home/ubuntu/.ansible/collections/ansible_collections/jfrog/platform
+cp -r artifactory ~/<project_directory>/roles/artifactory
+
+## static-assignments/artifactory.yml
     - hosts: artifact_repository
       ignore_unreachable: yes
       become: yes
@@ -402,8 +389,7 @@ Configure Artifactory
   playbooks/site.yml
     - name: Install Artifactory
       import_playbook: ../static-assignments/artifactory.yml
-
-  ```
+```
 
 - Run the role against the Artifactory server. 
   
@@ -467,26 +453,27 @@ Prepare Jenkins
     ```
     http://<artifactory-server-ip>:8082/
     ```
-    ![Project14jfrogplatformdashboard](https://user-images.githubusercontent.com/41236641/163575452-1f0b0625-f2d1-461a-b855-68ab25fe19da.PNG)
-
+ 
+ ![Project14jfrogplatformdashboard](https://user-images.githubusercontent.com/41236641/163575452-1f0b0625-f2d1-461a-b855-68ab25fe19da.PNG)
 
 Integrate Artifactory repository with Jenkins
-
----
 - Create a dummy Jenkinsfile in the root of the php-todo repo
 - In Blue Ocean, create multibranch pipeline
 - Create a database and user on the database server using ansible role
-  ```
+ 
+```
   CREATE DATABASE homestead;
   CREATE USER 'homestead'@'%' IDENTIFIED BY 'sePret^i';
   GRANT ALL PRIVILEGES ON * . * TO 'homestead'@'%';
-  ```
+```
+
 ![Project14main ymlconfiguration](https://user-images.githubusercontent.com/41236641/163575771-31b1ca95-1a52-431e-b110-009c1bb38c96.PNG)
 
 - Update the .env.sample file with your db connectivity details
 
 - Update Jenkinsfile with proper configuration
-  ```
+
+```
   pipeline {
     agent any
 
@@ -517,35 +504,40 @@ Integrate Artifactory repository with Jenkins
         }
       }
     }
-    ```
+```
+
 - After successful run of this step, login to the database, run show tables and you will see the tables being created for you)
- ![Project14phptodoappmege](https://user-images.githubusercontent.com/41236641/163575838-276c2cf5-0fa6-443a-bc0a-863ded908572.PNG)
+
+![Project14phptodoappmege](https://user-images.githubusercontent.com/41236641/163575838-276c2cf5-0fa6-443a-bc0a-863ded908572.PNG)
+
 ![Project14databases](https://user-images.githubusercontent.com/41236641/163575972-40a29a87-397b-4eea-b3ad-fcd6499dfa08.PNG)
 
-
 - Update Jenkinsfile to include unit tests
-  ```
+  
+ ```
   stage('Execute Unit Tests') {
       steps {
              sh './vendor/bin/phpunit'
       }
-  ```
+```
 Code Quality Analysis
 
 ---
 Most commonly used tool for php code quality analysis is **phploc**
 - Add the code analysis step in Jenkinsfile
-  ```
+
+```
       stage('Code Analysis') {
       steps {
             sh 'phploc app/ --log-csv build/logs/phploc.csv'
 
       }
     }
-  ```
+ ```
 
 - Plot the data using Jenkins Plot plugin
-  ```
+ 
+ ```
       stage('Plot Code Coverage Report') {
       steps {
 
@@ -562,22 +554,26 @@ Most commonly used tool for php code quality analysis is **phploc**
             plot csvFileName: 'plot-396c4a6b-b573-41e5-85d8-73613b2ffffb.csv', csvSeries: [[displayTableFlag: false, exclusionValues: 'Interfaces,Traits,Classes,Methods,Functions,Constants', file: 'build/logs/phploc.csv', inclusionFlag: 'INCLUDE_BY_STRING', url: '']], group: 'phploc', numBuilds: '100', style: 'line', title: 'BB - Structure Objects', yaxis: 'Count'
           }
         }
-  ```
-  CLick on the Plots button on the left pane. If everything was configured properly, you should see something like this:
-  ![Project14codeanalysisandcoveragereport](https://user-images.githubusercontent.com/41236641/163576113-4e4be969-afda-4d76-bf45-4550bd545238.PNG)
+ ```
+
+CLick on the Plots button on the left pane. If everything was configured properly, you should see something like this:
+
+![Project14codeanalysisandcoveragereport](https://user-images.githubusercontent.com/41236641/163576113-4e4be969-afda-4d76-bf45-4550bd545238.PNG)
+
 ![Project14codeanalysisandcoveragefullreport2](https://user-images.githubusercontent.com/41236641/163576139-67395b40-6bf8-428b-a943-f3d87360ce05.PNG)
 
-
 - Package the artifacts 
-  ```
+ 
+ ```
   stage ('Package Artifact') {
     steps {
             sh 'zip -qr ${WORKSPACE}/php-todo.zip ${WORKSPACE}/*'
     }
-  ```
+ ```
 
 - Publish packaged artifact into Artifactory
-  ```
+  
+```
   stage ('Upload Artifact to Artifactory') {
       steps {
         script { 
@@ -596,21 +592,24 @@ Most commonly used tool for php code quality analysis is **phploc**
       }
     }
   ```
-  **Blocker:** For this to work, you have to create a local repository on your Artifactory with package type as Generic and Repository Key as the name of the repo (PBL in this case)
-  ![Project14deployedappartifactonjfrogserver](https://user-images.githubusercontent.com/41236641/163576720-c5a8ba65-8260-4fbb-aee4-9142afb5d8c3.PNG)
+**Blocker:** For this to work, you have to create a local repository on your Artifactory with package type as Generic and Repository Key as the name of the repo (PBL in this case)
+  
+![Project14deployedappartifactonjfrogserver](https://user-images.githubusercontent.com/41236641/163576720-c5a8ba65-8260-4fbb-aee4-9142afb5d8c3.PNG)
 
 
 - Deploy application to dev environment by launching the Ansible pipeline 
-  ```
+
+```
   stage ('Deploy to Dev Environment') {
     steps {
     build job: 'ansible-config-mgt/main', parameters: [[$class: 'StringParameterValue', name: 'env', value: 'dev']], propagate: false, wait: true
     }
   }
   ```
-  This build job tells Jenkins to trigger a job in the ansible-config-mgt pipeline. Since the ansible-config-mgt pipeline requires some parameters, we pass them using the 'parameters' value.
+  
+This build job tells Jenkins to trigger a job in the ansible-config-mgt pipeline. Since the ansible-config-mgt pipeline requires some parameters, we pass them using the 'parameters' value.
 
-  Push the code and trigger a build, the final result should resemble this:
+Push the code and trigger a build, the final result should resemble this:
   
 
 ### Step 3: Configure SonarQube
@@ -634,41 +633,43 @@ mv lrk.sonarqube sonarqube
   - Install and Setup PostgreSQL 10 Database for SonarQube
   - Install and configure SonarQube
 
-
-Tune Linux Kernel
-
----  
+### Tune Linux Kernel
 **Note that this step is already covered in the [sonarqube playbook](#sonarqube_playbook)**
-  ```
+  
+```
   sudo sysctl -w vm.max_map_count=262144
   sudo sysctl -w fs.file-max=65536
   ulimit -n 65536
   ulimit -u 4096
+```
 
-  ##This changes do not persist after system reboot
-  ```
-  To enable persistence after reboot, open the /etc/security/limits.conf file and append the following.
-  ```
+## This changes do not persist after system reboot
+To enable persistence after reboot, open the /etc/security/limits.conf file and append the following.
+
+```
   sonarqube   -   nofile   65536
   sonarqube   -   nproc    4096
-  ```
-The fine tuned settings can be found in the tasks section of the role
+```
 
+The fine tuned settings can be found in the tasks section of the role
 Update system packages and Install Java and other required packages
 
----
 **Note that this step is already covered in the [sonarqube playbook](#sonarqube_playbook)**
 - Update and upgrade packages
-  ```
+  
+```
   sudo apt-get update
   sudo apt-get upgrade
-  ```
+```
+
 - Install wget and unzip packages
-  ```
+  
+```
   sudo apt-get install wget unzip -y
-  ```
+```
+
 - Install OpenJDK and Java Runtime Environment (JRE)
-  ```
+```
   sudo apt-get install openjdk-11-jdk -y
   sudo apt-get install openjdk-11-jre -y
   ```
@@ -686,34 +687,33 @@ Install and Setup PostgreSQL 10 Database for SonarQube
 ---
 **Note that this step is already covered in the [sonarqube playbook](#sonarqube_playbook)**
 - Add PostgreSQL to repo list
-  ```
-  sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
-  ```
-- Add repo key
-  ```
-  wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
-  ```
-- Install PostgreSQL
-  ```
-  sudo apt-get -y install postgresql postgresql-contrib
-  ```
-- Start and enable PostgreSQL Database service
-  ```
-  sudo systemctl start postgresql
-  sudo systemctl enable postgresql
-  ```
-- Change the default password for postgres user (to whatever password you can easily remember)
-  ```
-  sudo passwd postgres
-  ```
+
+```
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list' ```
+# Add repo key
+wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add -
+
+# Install PostgreSQL
+sudo apt-get -y install postgresql postgresql-contrib
+
+# Start and enable PostgreSQL Database service
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+  
+### Change the default password for postgres user (to whatever password you can easily remember)
+```
+sudo passwd postgres
+```
   Then switch to postgres user
-  ```
-  su - postgres
-  ```
+```
+su - postgres
+```
 - Create a new user for SonarQube
-  ```
-  createuser sonar
-  ```
+```
+createuser sonar 
+```
+
 - Create Sonar DB and user
   - Switch to PostgreSQL shell
     ```
@@ -888,6 +888,7 @@ Configure SonarQube and Jenkins for Quality Gate
         }
     }
   ```
+  
   Save and run the pipeline to install the scanner (you might get an error initially)
 
 - Edit sonar-scanner.properties file
@@ -899,6 +900,7 @@ Configure SonarQube and Jenkins for Quality Gate
   sonar.host.url=http://<SonarQube-Server-IP-address>:9000
   sonar.projectKey=php-todo
   sonar.sources=.
+  
   #----- Default source code encoding
   sonar.sourceEncoding=UTF-8
   sonar.exclusions=**/vendor/**
@@ -912,19 +914,18 @@ Configure SonarQube and Jenkins for Quality Gate
 - Navigate to your php-todo dashboard on SonarQube UI
 
 Conditionally Deploy to Higher Environments
----
+
+```
 - Include a **when** condition to execute the Quality Gate stage only when the running branch is develop, hotfix, release, main or master
-  ```
   when { branch pattern: "^develop*|^hotfix*|^release*|^main*", comparator: "REGEXP"}
-  ```
+ 
 - Add a timeout step to abort to Quality Gate stage after 1 minute (or any time you like)
-  ```
+  
       timeout(time: 1, unit: 'MINUTES') {
         waitForQualityGate abortPipeline: true
     }
-  ```
   Quality Gate stage snippet should look like this:
-  ```
+
   stage('SonarQube Quality Gate') {
       when { branch pattern: "^develop*|^hotfix*|^release*|^main*", comparator: "REGEXP"}
         environment {
@@ -940,18 +941,18 @@ Conditionally Deploy to Higher Environments
         }
     }
   ```
-  You should get the following when you run the pipeline:
-  ![Project14sonarqubeinstalledconfirmed](https://user-images.githubusercontent.com/41236641/163577298-f7657733-ba11-4252-8dad-7fe4657fa075.PNG)
   
-  Quality gate does not execute for specific branches based on the when condition ('new-features' branch):
-![Project14codequalitycheckdone](https://user-images.githubusercontent.com/41236641/163577726-38d6effe-651c-4437-a5ca-aa9ab65cfde9.PNG)
+ You should get the following when you run the pipeline:
+ ![Project14sonarqubeinstalledconfirmed](https://user-images.githubusercontent.com/41236641/163577298-f7657733-ba11-4252-8dad-7fe4657fa075.PNG)
+  
+ Quality gate does not execute for specific branches based on the when condition ('new-features' branch):
+ ![Project14codequalitycheckdone](https://user-images.githubusercontent.com/41236641/163577726-38d6effe-651c-4437-a5ca-aa9ab65cfde9.PNG)
 
 
 ### Additional setups
 
 Configure Jenkins slave servers
 
----
 - Spin up two new EC2 Instance. Ubuntu OS was used in this case:
   
   - Install Java and Ansible using ansible roles
@@ -984,9 +985,4 @@ Configure Jenkins slave servers
   ```
 
 Configure GitHub WebHook for Automatic Build of Pushed Code
----
-[Video Submission](https://drive.google.com/file/d/1fMIP6RyA_yRFvaaotrMu6JOGrs71RVWh/view?usp=sharing)
 
-
-
-[Back to top](#)
